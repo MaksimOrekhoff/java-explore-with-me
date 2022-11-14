@@ -16,6 +16,7 @@ import java.util.Date;
 public class MapperEvents {
 
     final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
     public Event toEvent(NewEventDto newEventDto, long userId, long locationId) throws ParseException {
         return new Event(null,
                 newEventDto.getAnnotation(),
