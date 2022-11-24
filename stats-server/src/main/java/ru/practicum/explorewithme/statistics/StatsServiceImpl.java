@@ -31,6 +31,7 @@ public class StatsServiceImpl implements StatsService {
         } else {
             hits = hitsRepository.getAll(dateFormat.parse(start), dateFormat.parse(end), List.of(uris));
         }
+        log.info("Получена статистика запросов {}", hits);
         return hits;
     }
 }

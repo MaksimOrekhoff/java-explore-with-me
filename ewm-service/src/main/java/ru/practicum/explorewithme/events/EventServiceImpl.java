@@ -78,12 +78,12 @@ public class EventServiceImpl implements EventService {
     public List<EventFullDto> getAllEvents(long userId, Integer from, Integer size) {
         MyPageRequest myPageRequest = new MyPageRequest(from, size, Sort.unsorted());
         List<Event> events = eventRepository.findAllByInitiator(userId, myPageRequest);
-        List<EventFullDto> eventFullDtos = new ArrayList<>();
+        List<EventFullDto> eventsFullDto = new ArrayList<>();
         for (Event event : events) {
-            eventFullDtos.add(getEventFullDto(event.getInitiator(), event));
+            eventsFullDto.add(getEventFullDto(event.getInitiator(), event));
         }
-        log.debug("Получены от пользователя {} все собития {}", userId, eventFullDtos);
-        return eventFullDtos;
+        log.debug("Получены от пользователя {} все собития {}", userId, eventsFullDto);
+        return eventsFullDto;
     }
 
     @Override
@@ -185,12 +185,12 @@ public class EventServiceImpl implements EventService {
                 .findAllByInitiatorInAndStateInAndCategoryInAndEventDateAfterAndEventDateBefore(
                         users, strings, category, mapperEvents.dateFormat.parse(start),
                         mapperEvents.dateFormat.parse(end), myPageRequest);
-        List<EventFullDto> eventFullDtos = new ArrayList<>();
+        List<EventFullDto> eventsFullDto = new ArrayList<>();
         for (Event event : events) {
-            eventFullDtos.add(getEventFullDto(event.getInitiator(), event));
+            eventsFullDto.add(getEventFullDto(event.getInitiator(), event));
         }
-        log.debug("Получен список событий {}  ", eventFullDtos);
-        return eventFullDtos;
+        log.debug("Получен список событий {}  ", eventsFullDto);
+        return eventsFullDto;
     }
 
     @Override
@@ -208,7 +208,8 @@ public class EventServiceImpl implements EventService {
         request.setStatus(state ? StatusEvent.CONFIRMED : StatusEvent.REJECTED);
         Request newRequest = requestRepository.save(request);
         if (state) {
-            Event event = eventRepository.findById(eventId).get();
+            Event event = eventRepository.findById(eventId)
+                    .orElseThrow(() -> new NotFoundException("Такое событие не существует."));
             event.setConfirmedRequests(event.getConfirmedRequests() + 1);
             eventRepository.save(event);
             if (event.getConfirmedRequests() == event.getParticipantLimit()) {
@@ -272,52 +273,59 @@ public class EventServiceImpl implements EventService {
     private List<Event> setViews(List<Event> events) {
         String[] uris = new String[events.size()];
         for (int i = 0; i < events.size(); i++) {
-            uris[i] = "/event/" + events.get(i).getId();
+            uris[i] = "/events/" + events.get(i).getId();
         }
-        ResponseEntity<Object> statsDtos = eventClient.getHits("1900-11-23 00:48:09",
+        ResponseEntity<Object> statsDto = eventClient.getHits("1900-11-23 00:48:09",
                 "2100-11-23 00:48:09", uris, false);
-        List<LinkedHashMap<Object, Object>> linkedHashMap = (List<LinkedHashMap<Object, Object>>) statsDtos.getBody();
-        assert linkedHashMap != null;
-        if (linkedHashMap.size() > 0) {
-            for (int i = 0; i < events.size(); i++) {
-                Integer hits = (Integer) linkedHashMap.get(0).get("hits");
-                String uri = (String) linkedHashMap.get(0).get("uri");
-                String[] id = uri.split("/");
-                for (Event e : events) {
-                    if (e.getId().equals(Long.parseLong(id[2]))) {
-                        int index = events.indexOf(e);
-                        e.setViews(hits);
-                        events.set(index, e);
+        List<LinkedHashMap<Object, Object>> linkedHashMap = (List<LinkedHashMap<Object, Object>>) statsDto.getBody();
+        if (linkedHashMap != null) {
+            if (linkedHashMap.size() > 0) {
+                for (int i = 0; i < events.size(); i++) {
+                    Integer hits = (Integer) linkedHashMap.get(0).get("hits");
+                    String uri = (String) linkedHashMap.get(0).get("uri");
+                    String[] id = uri.split("/");
+                    for (Event e : events) {
+                        if (e.getId().equals(Long.parseLong(id[2]))) {
+                            int index = events.indexOf(e);
+                            e.setViews(hits);
+                            events.set(index, e);
+                        }
                     }
+                    events.get(i).setViews(hits);
                 }
-                events.get(i).setViews(hits);
             }
         }
+
         return events;
     }
 
     private EventFullDto getEventFullDto(long userId, Event event) {
-        User user = userRepository.findById(userId).get();
-        Category category = categoryRepository.findById(event.getCategory()).get();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Такой пользователь не существует."));
+        Category category = categoryRepository.findById(event.getCategory())
+                .orElseThrow(() -> new NotFoundException("Такая категория не существует."));
         return mapperEvents.toEventFullDto(event,
                 new LocationDto(event.getLat(), event.getLon()),
                 new UserDtoShort(user.getId(), user.getName()),
                 new CategoryDto(category.getId(), category.getName()));
     }
 
-    private List<EventShortDto> toEventShort(List<Event> events) throws ParseException {
-        return getEventShortDtos(events, categoryRepository, userRepository, mapperEvents);
+    private List<EventShortDto> toEventShort(List<Event> events) {
+        return getEventsShortDto(events, categoryRepository, userRepository, mapperEvents);
     }
 
-    public static List<EventShortDto> getEventShortDtos(List<Event> events, CategoryRepository categoryRepository, UserRepository userRepository, MapperEvents mapperEvents) throws ParseException {
-        List<EventShortDto> eventShortDtos = new ArrayList<>();
+    public static List<EventShortDto> getEventsShortDto(List<Event> events, CategoryRepository categoryRepository,
+                                                        UserRepository userRepository, MapperEvents mapperEvents) {
+        List<EventShortDto> eventsShortDto = new ArrayList<>();
         for (Event event : events) {
-            Category category = categoryRepository.findById(event.getCategory()).get();
-            User user = userRepository.findById(event.getInitiator()).get();
-            eventShortDtos.add(mapperEvents.toEventShortDto(event, new UserDtoShort(user.getId(), user.getName()),
+            Category category = categoryRepository.findById(event.getCategory())
+                    .orElseThrow(() -> new NotFoundException("Такая категория не существует."));
+            User user = userRepository.findById(event.getInitiator())
+                    .orElseThrow(() -> new NotFoundException("Такой пользователь не существует."));
+            eventsShortDto.add(mapperEvents.toEventShortDto(event, new UserDtoShort(user.getId(), user.getName()),
                     new CategoryDto(category.getId(), category.getName())));
         }
-        return eventShortDtos;
+        return eventsShortDto;
     }
 
     @Override

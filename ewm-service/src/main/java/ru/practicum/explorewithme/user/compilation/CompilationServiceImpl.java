@@ -13,13 +13,12 @@ import ru.practicum.explorewithme.events.dto.EventShortDto;
 import ru.practicum.explorewithme.exception.NotFoundException;
 import ru.practicum.explorewithme.user.UserRepository;
 
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static ru.practicum.explorewithme.events.EventServiceImpl.getEventShortDtos;
+import static ru.practicum.explorewithme.events.EventServiceImpl.getEventsShortDto;
 
 @Service
 @Slf4j
@@ -32,27 +31,27 @@ public class CompilationServiceImpl implements CompilationService {
     private final MapperEvents mapperEvents;
 
     @Override
-    public List<CompilationDto> getCompilations(Boolean pinned, Integer from, Integer size) throws ParseException {
+    public List<CompilationDto> getCompilations(Boolean pinned, Integer from, Integer size) {
         MyPageRequest myPageRequest = new MyPageRequest(from, size, Sort.unsorted());
         List<Compilation> compilations = compilationRepository.findAllByPinned(pinned, myPageRequest);
         if (compilations.isEmpty()) {
             return new ArrayList<>();
         }
         log.debug("Получены подборки {}  ", compilations);
-        return toCompilationDtos(compilations);
+        return toCompilationDto(compilations);
     }
 
     @Override
-    public CompilationDto createCompilations(NewCompilationDto newCompilationDto) throws ParseException {
+    public CompilationDto createCompilations(NewCompilationDto newCompilationDto) {
         List<Event> events = eventRepository.findAllByIdIn(List.of(newCompilationDto.getEvents()));
         Compilation compilation = compilationRepository.save(new Compilation(null,
                 newCompilationDto.getPinned(), newCompilationDto.getTitle(), events));
-        List<EventShortDto> shortDtos = toEventShort(compilation.getEvents());
+        List<EventShortDto> shortsDto = toEventShort(compilation.getEvents());
         log.debug("Создана подборка {}  ", compilation);
         return new CompilationDto(compilation.getId(),
                 compilation.getPinned(),
                 compilation.getTitle(),
-                shortDtos);
+                shortsDto);
     }
 
     @Override
@@ -62,7 +61,7 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
-    public CompilationDto getCompilationId(Long compId) throws ParseException {
+    public CompilationDto getCompilationId(Long compId) {
         Compilation compilation = compilationRepository.findById(compId)
                 .orElseThrow(() -> new NotFoundException("Такая подборка не существует."));
         CompilationDto compilationDto = new CompilationDto(compilation.getId(), compilation.getPinned(),
@@ -115,18 +114,18 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
 
-    private List<EventShortDto> toEventShort(List<Event> events) throws ParseException {
-        return getEventShortDtos(events, categoryRepository, userRepository, mapperEvents);
+    private List<EventShortDto> toEventShort(List<Event> events) {
+        return getEventsShortDto(events, categoryRepository, userRepository, mapperEvents);
     }
 
-    private List<CompilationDto> toCompilationDtos(List<Compilation> compilations) throws ParseException {
-        List<CompilationDto> compilationDtos = new ArrayList<>();
+    private List<CompilationDto> toCompilationDto(List<Compilation> compilations) {
+        List<CompilationDto> compilationDto = new ArrayList<>();
         for (Compilation compilation : compilations) {
-            compilationDtos.add(new CompilationDto(compilation.getId(),
+            compilationDto.add(new CompilationDto(compilation.getId(),
                     compilation.getPinned(),
                     compilation.getTitle(),
                     toEventShort(compilation.getEvents())));
         }
-        return compilationDtos;
+        return compilationDto;
     }
 }

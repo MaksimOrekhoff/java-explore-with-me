@@ -1,6 +1,7 @@
 package ru.practicum.explorewithme.client;
 
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
@@ -26,8 +27,7 @@ public class BaseClient {
     }
 
     private <T> ResponseEntity<Object> makeAndSendRequest(HttpMethod method, String path, @Nullable Map<String, Object> parameters, @Nullable T body) {
-        HttpEntity<T> requestEntity = new HttpEntity<>(body);
-
+        HttpEntity<T> requestEntity = new HttpEntity<>(body, new HttpHeaders());
         ResponseEntity<Object> statsServerResponse;
         try {
             if (parameters != null) {

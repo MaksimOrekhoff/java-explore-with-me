@@ -36,9 +36,9 @@ public class EventClient extends BaseClient {
                 "uris", uris,
                 "unique", unique
         );
-        String path = "";
+        StringBuilder path = new StringBuilder();
         for (String s : uris) {
-            path += s;
+            path.append(s);
         }
         return get("/stats?start={start}&end={end}&uris=" + path + "&unique={unique}", parameters);
     }
