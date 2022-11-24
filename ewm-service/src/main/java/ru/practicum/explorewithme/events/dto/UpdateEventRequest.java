@@ -11,7 +11,7 @@ import javax.validation.constraints.NotNull;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class EventUpdate {
+public class UpdateEventRequest {
     @Length(min = 20, max = 2000)
     private String annotation;
     private int category;

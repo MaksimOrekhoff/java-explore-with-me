@@ -2,10 +2,13 @@ package ru.practicum.explorewithme.category;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.explorewithme.category.dto.CategoryDto;
 import ru.practicum.explorewithme.client.MyPageRequest;
+import ru.practicum.explorewithme.events.Event;
+import ru.practicum.explorewithme.events.EventRepository;
 import ru.practicum.explorewithme.exception.NotFoundException;
 
 import java.util.List;
@@ -16,6 +19,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
+    private final EventRepository eventRepository;
 
     @Override
     public CategoryDto create(CategoryDto categoryDto) {
@@ -37,6 +41,10 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void remove(int catId) {
+        List<Event> events = eventRepository.findAllByCategory(catId);
+        if (!events.isEmpty()) {
+            throw new IllegalCallerException("Запрос приводит к нарушению целостности данных");
+        }
         categoryRepository.deleteById(catId);
         log.debug("Удалёна категория с id: {}", catId);
     }
@@ -52,8 +60,9 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public List<CategoryDto> getAllCategory(Integer from, Integer size) {
         MyPageRequest myPageRequest = new MyPageRequest(from, size, Sort.unsorted());
-        return categoryRepository.findAll(myPageRequest)
-                .stream().map(this::toCategoryDto)
+        Page<Category> categories = categoryRepository.findAll(myPageRequest);
+        log.debug("Получены все категории : {}", categories);
+        return categories.stream().map(this::toCategoryDto)
                 .collect(Collectors.toList());
     }
 

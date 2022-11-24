@@ -36,6 +36,11 @@ public class UserServiceImpl implements UserService {
     public Collection<UserDto> getAllUsers(Long[] ids, Integer from, Integer size) {
         MyPageRequest myPageRequest = new MyPageRequest(from, size, Sort.unsorted());
         Collection<Long> id = new ArrayList<>(List.of(ids));
+        if (ids.length == 0) {
+            return userDB.findAllByIdIn(id).stream()
+                    .map(mapperUsers::toUserDto)
+                    .collect(Collectors.toList());
+        }
         return userDB.findAllByIdIn(id, myPageRequest).stream()
                 .map(mapperUsers::toUserDto)
                 .collect(Collectors.toList());

@@ -12,10 +12,10 @@ import javax.validation.constraints.NotEmpty;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDto {
-    private  long id;
-    @NotBlank
-    private  String name;
+    private long id;
+    @NotBlank(message = "Некорректный формат имени")
+    private String name;
     @NotEmpty
     @Email(message = "Некорректный формат email")
-    private  String email;
+    private String email;
 }

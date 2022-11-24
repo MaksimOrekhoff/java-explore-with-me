@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import ru.practicum.explorewithme.locations.LocationDto;
 
 import javax.validation.constraints.NotBlank;
 
@@ -15,7 +14,7 @@ public class NewEventDto {
     private Long id;
     @NotBlank
     private String annotation;
-    private int category;
+    private Integer category;
     @NotBlank
     private String description;
     @NotBlank
@@ -23,7 +22,7 @@ public class NewEventDto {
     private LocationDto location;
     private Boolean paid;
     @Value("0")
-    private int participantLimit;
+    private Integer participantLimit;
     private Boolean requestModeration;
     @NotBlank
     private String title;

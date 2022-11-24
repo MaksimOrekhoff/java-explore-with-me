@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.locations;
+package ru.practicum.explorewithme.user.compilation;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,9 +9,9 @@ import javax.validation.constraints.NotBlank;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class LocationDto {
+public class NewCompilationDto {
+    private Long[] events;
+    private Boolean pinned;
     @NotBlank
-    private float lat;
-    @NotBlank
-    private float lon;
+    private String title;
 }

@@ -1,16 +1,16 @@
 package ru.practicum.explorewithme.events;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.Date;
 
-@Data
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 @Entity
 @AllArgsConstructor
-@NoArgsConstructor
 @Table(name = "events", schema = "public")
 public class Event {
     @Id
@@ -31,12 +31,14 @@ public class Event {
     private Date eventDate;
     @Column(name = "initiator_id")
     private long initiator;
-    @Column(name = "location_id")
-    private long location;
+    @Column(name = "lat")
+    private float lat;
+    @Column(name = "lon")
+    private float lon;
     @Column(name = "paid")
     private Boolean paid;
     @Column(name = "participant_Limit")
-    private int participantLimit;//request default
+    private int participantLimit;
     @Column(name = "published_On")
     private Date publishedOn;
     @Column(name = "request_Moderation")
