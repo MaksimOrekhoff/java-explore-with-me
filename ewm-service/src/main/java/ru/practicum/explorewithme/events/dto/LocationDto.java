@@ -10,8 +10,8 @@ import javax.validation.constraints.NotBlank;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LocationDto {
-    @NotBlank
+    @NotBlank(message = "Заполните широту")
     private float lat;
-    @NotBlank
+    @NotBlank(message = "Заполните долготу")
     private float lon;
 }

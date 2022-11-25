@@ -12,17 +12,17 @@ import javax.validation.constraints.NotBlank;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EventShortDto {
-    @NotBlank
+    @NotBlank(message = "Аннотация не может быть пустой")
     private String annotation;
     private CategoryDto category;
     private int confirmedRequests;
-    @NotBlank
+    @NotBlank(message = "Укажите дату проведения события")
     private String eventDate;
     private Long id;
     private UserDtoShort initiator;
-    @NotBlank
+    @NotBlank(message = "Укажите стоимость участия в событии")
     private Boolean paid;
-    @NotBlank
+    @NotBlank(message = "Заполните название")
     private String title;
     private Integer views;
 }

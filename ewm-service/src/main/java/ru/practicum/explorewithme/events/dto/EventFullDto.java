@@ -14,13 +14,13 @@ import javax.validation.constraints.NotEmpty;
 @AllArgsConstructor
 public class EventFullDto {
     private long id;
-    @NotEmpty
+    @NotEmpty(message = "Аннотация не может быть пустой")
     private String annotation;
     private CategoryDto category;
     private int confirmedRequests;
     private String createdOn;
     private String description;
-    @NotEmpty
+    @NotEmpty(message = "Укажите дату проведения события")
     private String eventDate;
     private UserDtoShort initiator;
     private LocationDto location;
@@ -29,7 +29,7 @@ public class EventFullDto {
     private String publishedOn;
     private Boolean requestModeration;
     private StatusEvent state;
-    @NotEmpty
+    @NotEmpty(message = "Заполните название")
     private String title;
     private int views;
 }

@@ -181,10 +181,8 @@ public class EventServiceImpl implements EventService {
                                               Integer from, Integer size) throws ParseException {
         MyPageRequest myPageRequest = new MyPageRequest(from, size, Sort.by("event_Date"));
         Collection<String> strings = states.stream().map(Enum::toString).collect(Collectors.toList());
-        List<Event> events = eventRepository
-                .findAllByInitiatorInAndStateInAndCategoryInAndEventDateAfterAndEventDateBefore(
-                        users, strings, category, mapperEvents.dateFormat.parse(start),
-                        mapperEvents.dateFormat.parse(end), myPageRequest);
+        List<Event> events = eventRepository.findAdminAllEvens(users, strings, category,
+                mapperEvents.dateFormat.parse(start), mapperEvents.dateFormat.parse(end), myPageRequest);
         List<EventFullDto> eventsFullDto = new ArrayList<>();
         for (Event event : events) {
             eventsFullDto.add(getEventFullDto(event.getInitiator(), event));
@@ -244,30 +242,38 @@ public class EventServiceImpl implements EventService {
     public List<EventShortDto> getEvents(String text, List<Integer> categories, Boolean paid,
                                          String rangeStart, String rangeEnd, Boolean onlyAvailable,
                                          String sort, Integer from, Integer size, HttpServletRequest request) throws ParseException {
-        MyPageRequest myPageRequest;
-        if (sort.equals("VIEWS")) {
-            myPageRequest = new MyPageRequest(from, size, Sort.by("views").ascending());
-        } else {
-            myPageRequest = new MyPageRequest(from, size, Sort.by("event_Date").ascending());
-        }
+        MyPageRequest myPageRequest = new MyPageRequest(from, size,
+                Sort.by(sort.equals("VIEWS") ? "views" : "event_Date").ascending());
+
         List<Event> events;
-        if (rangeStart.length() == 0) {
-            rangeStart = mapperEvents.dateFormat.format(new Date());
-            events = eventRepository.findAllByParam(StatusEvent.PUBLISHED.toString(), text, categories,
-                    mapperEvents.dateFormat.parse(rangeStart), paid, myPageRequest);
-            System.out.println(events);
+        rangeStart = rangeStart.length() == 0 ? mapperEvents.dateFormat.format(new Date()) : rangeStart;
+        rangeEnd = rangeEnd.length() == 0 ? "2100-11-23 00:48:09" : rangeEnd;
+
+        if (onlyAvailable) {
+            events = eventRepository.findAllByParamOnly(StatusEvent.PUBLISHED.toString(), text, categories,
+                    mapperEvents.dateFormat.parse(rangeStart), mapperEvents.dateFormat.parse(rangeEnd),
+                    paid, myPageRequest);
         } else {
             events = eventRepository.findAllByParam(StatusEvent.PUBLISHED.toString(), text, categories,
-                    mapperEvents.dateFormat.parse(rangeStart), mapperEvents.dateFormat.parse(rangeEnd), paid, myPageRequest);
+                    mapperEvents.dateFormat.parse(rangeStart), mapperEvents.dateFormat.parse(rangeEnd),
+                    paid, myPageRequest);
         }
-        eventClient.addHit(new HitDto(null, "ewm-service",
-                request.getRequestURI(), request.getRemoteAddr(), new Date()));
+
+        eventClient.addHit(new HitDto(null, "ewm-service", request.getRequestURI(),
+                request.getRemoteAddr(), new Date()));
         if (events.isEmpty()) {
             return new ArrayList<>();
         }
-        List<Event> eventsWithViews = setViews(events);
-        log.debug("Получен список событий {}  ", eventsWithViews);
-        return toEventShort(eventsWithViews);
+
+        setViews(events);
+        if (sort.equals("VIEWS")) {
+            events = events.stream()
+                    .sorted(Comparator.comparingInt(Event::getViews))
+                    .collect(Collectors.toList());
+        }
+
+        log.debug("Получен список событий {}  ", events);
+        return toEventShort(events);
     }
 
     private List<Event> setViews(List<Event> events) {
@@ -295,7 +301,6 @@ public class EventServiceImpl implements EventService {
                 }
             }
         }
-
         return events;
     }
 

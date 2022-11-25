@@ -12,10 +12,10 @@ import javax.validation.constraints.NotBlank;
 @AllArgsConstructor
 public class NewEventDto {
     private Long id;
-    @NotBlank
+    @NotBlank(message = "Аннотация не может быть пустой")
     private String annotation;
     private Integer category;
-    @NotBlank
+    @NotBlank(message = "Заполните описание")
     private String description;
     @NotBlank
     private String eventDate;
@@ -24,6 +24,6 @@ public class NewEventDto {
     @Value("0")
     private Integer participantLimit;
     private Boolean requestModeration;
-    @NotBlank
+    @NotBlank(message = "Заполните название")
     private String title;
 }

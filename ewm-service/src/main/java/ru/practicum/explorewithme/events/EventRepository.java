@@ -14,11 +14,9 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     @Query(value = "select * from events where initiator_id in ?1 and state_event in ?2 and category_id in ?3 " +
             "and event_Date between ?4 and ?5 ", nativeQuery = true)
-    List<Event> findAllByInitiatorInAndStateInAndCategoryInAndEventDateAfterAndEventDateBefore(Collection<Long> initiator,
-                                                                                               Collection<String> state,
-                                                                                               Collection<Integer> category,
-                                                                                               Date start, Date end,
-                                                                                               MyPageRequest myPageRequest);
+    List<Event> findAdminAllEvens(Collection<Long> initiator, Collection<String> state,
+                                  Collection<Integer> category, Date start, Date end,
+                                  MyPageRequest myPageRequest);
 
     Event findByIdAndState(Long eventId, StatusEvent statusEvent);
 
@@ -28,15 +26,15 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "select * from events where state_event like ?1 and (lower(annotation) like lower(?2) " +
                     "or lower(description) like lower(?2)) and category_id in ?3 and event_date between ?4 " +
                     "and ?5 and paid = ?6", nativeQuery = true)
-    List<Event> findAllByParam(String statusEvent, String text, Collection<Integer> categories, Date start, Date end,
-                               Boolean paid, MyPageRequest myPageRequest);
+    List<Event> findAllByParam(String statusEvent, String text, Collection<Integer> categories, Date start,
+                               Date end, Boolean paid, MyPageRequest myPageRequest);
 
     @Query(value =
             "select * from events where state_event like ?1 and (lower(annotation) like lower(?2) " +
-                    "or lower(description) like lower(?2)) and category_id in ?3 and event_date = ?4 " +
-                    " and paid = ?5", nativeQuery = true)
-    List<Event> findAllByParam(String statusEvent, String text, Collection<Integer> categories, Date start, Boolean paid,
-                               MyPageRequest myPageRequest);
+                    "or lower(description) like lower(?2)) and category_id in ?3 and event_date between ?4 " +
+                    "and ?5 and paid = ?5 and (participant_Limit - confirmedRequests) > 0", nativeQuery = true)
+    List<Event> findAllByParamOnly(String statusEvent, String text, Collection<Integer> categories, Date start,
+                                   Date end, Boolean paid, MyPageRequest myPageRequest);
 
     List<Event> findAllByCategory(Integer category);
 }

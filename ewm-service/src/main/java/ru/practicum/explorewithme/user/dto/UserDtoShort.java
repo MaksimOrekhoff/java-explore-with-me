@@ -9,6 +9,6 @@ import javax.validation.constraints.NotBlank;
 @AllArgsConstructor
 public class UserDtoShort {
     private Long id;
-    @NotBlank
+    @NotBlank(message = "Некорректный формат имени")
     private String name;
 }
