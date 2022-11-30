@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.user.compilation;
+package ru.practicum.explorewithme.compilation;
 
 import java.text.ParseException;
 import java.util.List;

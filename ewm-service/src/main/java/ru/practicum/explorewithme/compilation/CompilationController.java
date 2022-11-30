@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.user.compilation;
+package ru.practicum.explorewithme.compilation;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.explorewithme.comment.CommentDto;
+import ru.practicum.explorewithme.comment.CommentService;
+import ru.practicum.explorewithme.comment.NewCommentDto;
 import ru.practicum.explorewithme.events.EventService;
 import ru.practicum.explorewithme.events.dto.EventFullDto;
 import ru.practicum.explorewithme.events.dto.NewEventDto;
@@ -13,6 +16,7 @@ import ru.practicum.explorewithme.request.RequestDto;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
+import javax.xml.bind.ValidationException;
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.List;
@@ -27,6 +31,7 @@ import java.util.List;
 @RequestMapping(path = "/users")
 public class UserController {
     private final EventService eventService;
+    private final CommentService commentService;
 
     @GetMapping("/{userId}/events")
     public List<EventFullDto> allEventsUser(@PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
@@ -105,5 +110,69 @@ public class UserController {
                                     @PathVariable @NotBlank long reqId) {
         log.info("Получен Patch-запрос на отклонение заявки на участие c id: {} в событии : {} созданного пользователем c id: {}", eventId, reqId, userId);
         return eventService.rejectRequestUser(userId, eventId, reqId);
+    }
+
+    @PostMapping("/{userId}/events/{eventId}/comments")
+    public CommentDto postComment(@PathVariable @NotBlank long userId,
+                                  @PathVariable @NotBlank long eventId,
+                                  @RequestBody @Validated NewCommentDto newCommentDto) throws ValidationException {
+        log.info("Получен Post-запрос на добавление пользователем c id: {} событию : {} комментария {}",
+                userId, eventId, newCommentDto);
+        return commentService.addComment(userId, eventId, newCommentDto);
+    }
+
+    @PostMapping("/{userId}/events/{eventId}/comments/{commentId}")
+    public CommentDto postAddCommentToComment(@PathVariable @NotBlank long userId,
+                                              @PathVariable @NotBlank long eventId,
+                                              @PathVariable @NotBlank long commentId,
+                                              @RequestBody @Validated NewCommentDto newCommentDto) {
+        log.info("Получен Post-запрос на добавление пользователем c id: {} событию : {} комментария {} к комментарию {}",
+                userId, eventId, newCommentDto, commentId);
+        return commentService.addToComment(userId, eventId, commentId, newCommentDto);
+    }
+
+    @DeleteMapping("/{userId}/events/{eventId}/comments/{commentId}")
+    public void deleteComment(@PathVariable @NotBlank long userId,
+                              @PathVariable @NotBlank long eventId,
+                              @PathVariable @NotBlank long commentId) {
+        log.info("Получен Delete-запрос на удаление пользователем c id: {} у события : {} комментария {}",
+                userId, eventId, commentId);
+        commentService.removeComment(userId, eventId, commentId);
+    }
+
+    @GetMapping("/{userId}/events/{eventId}/comments/{commentId}")
+    public CommentDto getCommentUser(@PathVariable @NotBlank long userId,
+                                     @PathVariable @NotBlank long eventId,
+                                     @PathVariable @NotBlank long commentId) {
+        log.info("Получен Get-запрос на получение комментария {} к событию c id: {} от пользователя: {}",
+                commentId, eventId, userId);
+        return commentService.getCommentUserById(userId, eventId, commentId);
+    }
+
+    @GetMapping("/{userId}/comments")
+    public List<CommentDto> getAllCommentsUser(@PathVariable @NotBlank long userId,
+                                               @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
+                                               @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
+        log.info("Получен Get-запрос на получение всех комментариев пользователя: {}", userId);
+        return commentService.getAllCommentsUser(userId, from, size);
+    }
+
+    @GetMapping("/{userId}/events/{eventId}/comments")
+    public List<CommentDto> getAllCommentsEvent(@PathVariable @NotBlank long userId,
+                                                @PathVariable @NotBlank long eventId,
+                                                @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
+                                                @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
+        log.info("Получен Get-запрос на получение всех комментариев к событию {} от пользователя: {}", eventId, userId);
+        return commentService.getAllCommentsEvent(userId, eventId, from, size);
+    }
+
+    @GetMapping("/{userId}/events/{eventId}/comments/search")
+    public List<CommentDto> searchComments(@PathVariable @NotBlank long userId,
+                                           @PathVariable @NotBlank long eventId,
+                                           @RequestParam(name = "text", defaultValue = "") String text,
+                                           @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
+                                           @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
+        log.info("Получен Get-запрос на поиск комментариев к событию {} от пользователя: {} содержащих {}", eventId, userId, text);
+        return commentService.getSearchCommentsEvent(userId, eventId, text, from, size);
     }
 }

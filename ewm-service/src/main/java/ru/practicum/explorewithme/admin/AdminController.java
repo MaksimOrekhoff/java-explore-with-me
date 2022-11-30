@@ -6,14 +6,15 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.explorewithme.category.CategoryService;
 import ru.practicum.explorewithme.category.dto.CategoryDto;
+import ru.practicum.explorewithme.comment.CommentService;
 import ru.practicum.explorewithme.events.EventService;
 import ru.practicum.explorewithme.events.StatusEvent;
 import ru.practicum.explorewithme.events.dto.EventFullDto;
 import ru.practicum.explorewithme.events.dto.NewEventDto;
 import ru.practicum.explorewithme.user.UserService;
-import ru.practicum.explorewithme.user.compilation.CompilationDto;
-import ru.practicum.explorewithme.user.compilation.CompilationService;
-import ru.practicum.explorewithme.user.compilation.NewCompilationDto;
+import ru.practicum.explorewithme.compilation.CompilationDto;
+import ru.practicum.explorewithme.compilation.CompilationService;
+import ru.practicum.explorewithme.compilation.NewCompilationDto;
 import ru.practicum.explorewithme.user.dto.UserDto;
 
 import javax.validation.constraints.NotBlank;
@@ -32,6 +33,7 @@ public class AdminController {
     private final CategoryService categoryService;
     private final EventService eventService;
     private final CompilationService compilationService;
+    private final CommentService commentService;
 
     @PostMapping("/users")
     public UserDto postUsers(@Validated @RequestBody UserDto userDto) {
@@ -138,6 +140,12 @@ public class AdminController {
                                        @PathVariable @NotBlank long eventId) {
         log.info("Получен запрос на добавление события : {} в подборку с id: {}.", eventId, compId);
         compilationService.addEvent(compId, eventId);
+    }
+
+    @DeleteMapping("/comments/{commentId}")
+    public void deleteComment(@PathVariable @NotBlank long commentId) {
+        log.info("Получен Delete-запрос на удаление комментария {} администратором", commentId);
+        commentService.removeCommentAdmin(commentId);
     }
 
 }

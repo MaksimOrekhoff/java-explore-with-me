@@ -1,18 +1,26 @@
 package ru.practicum.explorewithme.events;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.explorewithme.category.dto.CategoryDto;
+import ru.practicum.explorewithme.comment.Comment;
+import ru.practicum.explorewithme.comment.CommentDto;
 import ru.practicum.explorewithme.events.dto.*;
+import ru.practicum.explorewithme.user.UserRepository;
 import ru.practicum.explorewithme.user.dto.UserDtoShort;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
 
 @Component
+@RequiredArgsConstructor
 public class MapperEvents {
-
     final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private final UserRepository userRepository;
 
     public Event toEvent(NewEventDto newEventDto, long userId, LocationDto locationDto) throws ParseException {
         return new Event(null,
@@ -31,7 +39,8 @@ public class MapperEvents {
                 newEventDto.getRequestModeration(),
                 StatusEvent.PENDING,
                 newEventDto.getTitle(),
-                0);
+                0,
+                new ArrayList<>());
     }
 
     public EventFullDto toEventFullDto(Event event, LocationDto locationDto,
@@ -51,7 +60,8 @@ public class MapperEvents {
                 event.getRequestModeration(),
                 event.getState(),
                 event.getTitle(),
-                event.getViews());
+                event.getViews(),
+                toCommentDtos(event.getComments()));
     }
 
     public Event toUpdateEvent(Event eventOld, UpdateEventRequest updateEventRequest) throws ParseException {
@@ -74,7 +84,8 @@ public class MapperEvents {
                 userDtoShort,
                 event.getPaid(),
                 event.getTitle(),
-                event.getViews());
+                event.getViews(),
+                toCommentDtos(event.getComments()));
     }
 
     public Event updateEvent(Event oldEvent, NewEventDto newEventDto) throws ParseException {
@@ -100,4 +111,27 @@ public class MapperEvents {
         }
         return oldEvent;
     }
+
+    private List<CommentDto> toCommentDtos(List<Comment> comments) {
+        List<CommentDto> commentDtos = new ArrayList<>();
+        for (Comment comment : comments) {
+            if (!comment.getComments().isEmpty()) {
+                List<CommentDto> commentDtos1 = toCommentDtos(comment.getComments());
+                commentDtos.add(new CommentDto(comment.getId(), comment.getComment(),
+                        new UserDtoShort(userRepository.findById(comment.getUserId()).get().getId(),
+                                userRepository.findById(comment.getUserId()).get().getName()),
+                        comment.getCreated(),
+                        commentDtos1));
+                continue;
+            }
+            commentDtos.add(new CommentDto(comment.getId(), comment.getComment(),
+                    new UserDtoShort(userRepository.findById(comment.getUserId()).get().getId(),
+                            userRepository.findById(comment.getUserId()).get().getName()),
+                    comment.getCreated(),
+                    new ArrayList<>()));
+        }
+        return commentDtos;
+    }
 }
+
+

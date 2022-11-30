@@ -16,14 +16,14 @@ import java.time.LocalDateTime;
 public class ErrorHandler {
     @ExceptionHandler({IllegalArgumentException.class})
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ApiError validationExceptionHandler(final IllegalArgumentException e) {
+    public ApiError exceptionServerHandler(final IllegalArgumentException e) {
         return new ApiError(null, e.getLocalizedMessage(),
                 e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, LocalDateTime.now());
     }
 
     @ExceptionHandler({EmptyResultDataAccessException.class})
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ApiError validationException(final EmptyResultDataAccessException e) {
+    public ApiError validationExceptionData(final EmptyResultDataAccessException e) {
         return new ApiError(null, e.getLocalizedMessage(),
                 e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, LocalDateTime.now());
     }
@@ -37,28 +37,28 @@ public class ErrorHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiError notFoundExceptionHandler(final MethodArgumentNotValidException e) {
+    public ApiError notValidArgExceptionHandler(final MethodArgumentNotValidException e) {
         return new ApiError(null, e.getLocalizedMessage(),
                 e.getMessage(), HttpStatus.BAD_REQUEST, LocalDateTime.now());
     }
 
     @ExceptionHandler(IllegalCallerException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiError notFoundExceptionHandler(final IllegalCallerException e) {
+    public ApiError illegalCallExceptionHandler(final IllegalCallerException e) {
         return new ApiError(null, e.getLocalizedMessage(),
                 e.getMessage(), HttpStatus.CONFLICT, LocalDateTime.now());
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiError notFoundExceptionHandler(final ConstraintViolationException e) {
+    public ApiError violationExceptionHandler(final ConstraintViolationException e) {
         return new ApiError(e.getStackTrace(), e.getLocalizedMessage(),
                 e.getMessage(), HttpStatus.CONFLICT, LocalDateTime.now());
     }
 
     @ExceptionHandler(ValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiError notFoundExceptionHandler(final ValidationException e) {
+    public ApiError validationExceptionHandler(final ValidationException e) {
         return new ApiError(null, e.getLocalizedMessage(),
                 e.getMessage(), HttpStatus.BAD_REQUEST, LocalDateTime.now());
     }
@@ -66,7 +66,7 @@ public class ErrorHandler {
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiError notFoundExceptionHandler(final MissingServletRequestParameterException e) {
+    public ApiError requestParamExceptionHandler(final MissingServletRequestParameterException e) {
         return new ApiError(null, e.getLocalizedMessage(),
                 e.getMessage(), HttpStatus.BAD_REQUEST, LocalDateTime.now());
     }
