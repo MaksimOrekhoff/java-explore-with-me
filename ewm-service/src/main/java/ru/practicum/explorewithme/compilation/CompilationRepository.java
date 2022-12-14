@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.user.compilation;
+package ru.practicum.explorewithme.compilation;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import ru.practicum.explorewithme.client.MyPageRequest;

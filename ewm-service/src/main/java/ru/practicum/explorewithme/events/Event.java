@@ -1,16 +1,20 @@
 package ru.practicum.explorewithme.events;
 
 import lombok.*;
+import org.hibernate.Hibernate;
+import ru.practicum.explorewithme.comment.Comment;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 
 @Getter
 @Setter
-@ToString
-@RequiredArgsConstructor
-@Entity
 @AllArgsConstructor
+@NoArgsConstructor
+@Entity
 @Table(name = "events", schema = "public")
 public class Event {
     @Id
@@ -50,4 +54,44 @@ public class Event {
     private String title;
     @Column(name = "views")
     private int views;
+
+    @OneToMany(targetEntity = Comment.class, mappedBy = "event",
+            fetch = FetchType.EAGER)
+    private List<Comment> comments = new ArrayList<>();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        Event event = (Event) o;
+        return id != null && Objects.equals(id, event.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "Event{" +
+                "id=" + id +
+                ", annotation='" + annotation + '\'' +
+                ", category=" + category +
+                ", confirmedRequests=" + confirmedRequests +
+                ", createdOn=" + createdOn +
+                ", description='" + description + '\'' +
+                ", eventDate=" + eventDate +
+                ", initiator=" + initiator +
+                ", lat=" + lat +
+                ", lon=" + lon +
+                ", paid=" + paid +
+                ", participantLimit=" + participantLimit +
+                ", publishedOn=" + publishedOn +
+                ", requestModeration=" + requestModeration +
+                ", state=" + state +
+                ", title='" + title + '\'' +
+                ", views=" + views +
+                '}';
+    }
 }
